@@ -68,7 +68,6 @@ async function handleEnroll(message) {
     var teacherID = message.author.id;
 
     // Check if it is initiated classroom
-
     var response = await classExists(classID);
 
     if (response.status === 200) {
@@ -84,12 +83,14 @@ async function handleEnroll(message) {
     const commandBody = message.content.slice(prefix.length);
     const args = commandBody.split(' ');
 
-    if (args.length === 0) {
+    if (args.length === 1) {
         message.reply("Please mention Users to add them in class");
         return;
     }
 
-    for (var i = 0; i < args.length; i++) {
+    console.log(args);
+
+    for (var i = 1; i < args.length; i++) {
         var user = getUserFromMention(args[i]);
 
         if (user != null) {

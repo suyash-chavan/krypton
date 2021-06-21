@@ -1,26 +1,24 @@
-// const Discord = require("discord.js");
 const axios = require('axios');
 const config = require("./config.json");
 const discordClient = require('./discordClient.js');
-// const client = new Discord.Client();
 const prefix = "$";
 
 const handler = require('./handlers.js');
 
-discordClient.client.on("message", function(message) { 
+discordClient.client.on("message", function (message) {
     if (message.author.bot) return;
     if (!message.content.startsWith(prefix)) return;
 
-    if(message.guild === null){
+    if (message.guild === null) {
         // Need to handle DMs
-        return ;
+        return;
     }
 
     const commandBody = message.content.slice(prefix.length);
     const args = commandBody.split(' ');
     const command = args.shift().toLowerCase();
 
-    switch(command){
+    switch (command) {
         case "init":
             handler.handleInit(message);
             break;
@@ -39,8 +37,8 @@ discordClient.client.on("message", function(message) {
         default:
             handler.handleInvalidCommand(message);
     }
-    
-}); 
+
+});
 
 discordClient.client.login(config.BOT_TOKEN);
 

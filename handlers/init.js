@@ -19,8 +19,16 @@ async function createClass(classID, className, teacherID) {
     teacherID = "id_" + teacherID;
 
     var data = JSON.stringify({
-        "operation": "sql",
-        "sql": "INSERT INTO classroomInfo.classrooms (channelID, name, teacherID) VALUES('" + classID + "', '" + className + "','" + teacherID + "')",
+        "operation": "insert",
+        "schema": "classroomInfo",
+        "table": "classrooms",
+        "records": [
+            {
+                "channelID": classID,
+                "name": className,
+                "teacherID": teacherID
+            }
+        ]
     });
 
     var response = await sendRequest.sendRequest(data);
@@ -42,16 +50,69 @@ async function createTable(classID) {
 
     var response = await sendRequest.sendRequest(data);
 
-    // Modify table Schema
+    return response;
+}
+
+async function createAssignmentTable(classID) {
+
+    // Create Table
+
+    classID = "id_" + classID;
+
+    var data = JSON.stringify({
+        "operation": "create_table",
+        "schema": "assignmentInfo",
+        "table": classID,
+        "hash_attribute": "id"
+    });
+
+    var response = await sendRequest.sendRequest(data);
 
     data = JSON.stringify({
         "operation": "insert",
-        "schema": "userInfo",
+        "schema": "assignmentInfo",
+        "table": classID,
+        "records": [
+            {
+                "assNo": 0,
+                "teacherID": "",
+                "url": "",
+                "title": "",
+                "deadline": ""
+            }
+        ]
+    });
+
+    response = await sendRequest.sendRequest(data);
+
+    return response;
+}
+
+async function createSubmissionTable(classID) {
+
+    // Create Table
+
+    classID = "id_" + classID;
+
+    var data = JSON.stringify({
+        "operation": "create_table",
+        "schema": "submissionInfo",
+        "table": classID,
+        "hash_attribute": "id"
+    });
+
+    var response = await sendRequest.sendRequest(data);
+
+    data = JSON.stringify({
+        "operation": "insert",
+        "schema": "submissionInfo",
         "table": classID,
         "records": [
             {
                 "userID": "id_",
-                "teacherID": "id_"
+                "url": "",
+                "comment": "",
+                "assNo": ""
             }
         ]
     });
@@ -96,6 +157,10 @@ async function handleInit(message) {
     }
 
     response = await createTable(classID);
+
+    response = await createAssignmentTable(classID);
+
+    response = await createSubmissionTable(classID);
 
     message.reply(className + " created Successfully!");
 }
