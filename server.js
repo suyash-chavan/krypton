@@ -1,9 +1,12 @@
-const axios = require('axios');
 const config = require("./config.json");
 const discordClient = require('./discordClient.js');
 const prefix = "$";
 
 const handler = require('./handlers.js');
+
+discordClient.client.on('ready', () => {
+    discordClient.client.user.setActivity('Classrooms', { type: 'WATCHING' });
+});
 
 discordClient.client.on("message", function (message) {
     if (message.author.bot) return;
@@ -41,4 +44,3 @@ discordClient.client.on("message", function (message) {
 });
 
 discordClient.client.login(config.BOT_TOKEN);
-
