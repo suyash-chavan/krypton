@@ -37,6 +37,12 @@ async function handleAssignments(message) {
 
     assignments.sort((a, b) => a.assNo - b.assNo);
 
+    if(assignments.length === 0)
+    {
+        message.reply("No Assignments Found!");
+        return ;
+    }
+
     var title = "";
     var deadline = "";
 
@@ -92,7 +98,7 @@ async function getStudents(classID) {
 
     var data = JSON.stringify({
         "operation": "sql",
-        "sql": "SELECT userID FROM userInfo." + classID,
+        "sql": "SELECT userID FROM userInfo." + classID + " WHERE userID != 'id_'",
     });
 
     var response = await sendRequest.sendRequest(data).catch(e => console.log(e));
@@ -164,9 +170,9 @@ async function handleNotReport(message, assNo) {
         }
     }
 
-    if(absent===""){
+    if (absent === "") {
         message.reply("Everyone has submitted the Assignment :slight_smile:");
-        return ;
+        return;
     }
 
     message.channel.send({
@@ -180,6 +186,29 @@ async function handleNotReport(message, assNo) {
     });
 }
 
+async function handleEnrolled(message){
+
+    var classID = message.channel.id;
+    var students = await getStudents(classID);
+    students = students.data;
+
+    var user = "";
+
+    for (var i = 0; i < students.length; i++) {
+        user = user + "<@" + students[i].userID.slice(3) + ">\n";
+    }
+
+    message.channel.send({
+        embed: {
+            color: 3447003,
+            title: "Enrolled students...!!!",
+            fields: [
+                { name: "User", value: user, inline: true }
+            ]
+        }
+    });
+}
+
 async function handleView(message) {
 
     var commandBody = message.content.slice(prefix.length);
@@ -188,6 +217,17 @@ async function handleView(message) {
 
     if (args.length === 0) {
         await handleAssignments(message);
+        return;
+    }
+
+    if (args.length === 1) {
+        if (args[0] === "enrolled") {
+            await handleEnrolled(message);
+        }
+        else {
+            message.reply("Incorrect Command Format");
+        }
+
         return;
     }
 

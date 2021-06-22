@@ -4,6 +4,7 @@ const { handleInit } = require('./handlers/init.js');
 const { handleInvalidCommand } = require('./handlers/invalidCommand.js');
 const { handleSubmit } = require('./handlers/submit.js');
 const { handleView } = require('./handlers/view.js');
+const { handleHelp } = require('./handlers/help.js');
 
 module.exports = {
     handleCreate,
@@ -11,5 +12,6 @@ module.exports = {
     handleInit,
     handleView,
     handleSubmit,
-    handleInvalidCommand
+    handleInvalidCommand,
+    handleHelp
 };

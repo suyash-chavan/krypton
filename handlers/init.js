@@ -50,6 +50,20 @@ async function createTable(classID) {
 
     var response = await sendRequest.sendRequest(data);
 
+    data = JSON.stringify({
+        "operation": "insert",
+        "schema": "userInfo",
+        "table": classID,
+        "records": [
+            {
+                "userID": "id_",
+                "teacherID": "id_",
+            }
+        ]
+    });
+
+    response = await sendRequest.sendRequest(data);
+
     return response;
 }
 
@@ -75,7 +89,7 @@ async function createAssignmentTable(classID) {
         "records": [
             {
                 "assNo": 0,
-                "teacherID": "",
+                "teacherID": "id_",
                 "url": "",
                 "title": "",
                 "deadline": ""

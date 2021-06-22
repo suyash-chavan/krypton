@@ -29,6 +29,23 @@ function getUserFromMention(mention) {
     }
 }
 
+async function isEnrolled(user, classID) {
+    classID = "id_" + classID;
+    userID = "id_" + user.id;
+
+    var data = JSON.stringify({
+        "operation": "sql",
+        "sql": "SELECT * FROM userInfo." + classID + " WHERE userID = '" + userID + "'",
+    });
+
+    var response = await sendRequest.sendRequest(data).catch();
+
+    if (response.data.length === 0) {
+        return;
+    }
+    return (response.data)[0].id;
+}
+
 async function enrollUser(user, classID, teacherID) {
     classID = "id_" + classID;
     teacherID = "id_" + teacherID;
@@ -94,6 +111,9 @@ async function handleEnroll(message) {
         var user = getUserFromMention(args[i]);
 
         if (user != null) {
+            if (await isEnrolled(user, classID)){
+                continue;
+            }
             await enrollUser(user, classID, teacherID);
         }
     }

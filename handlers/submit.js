@@ -1,6 +1,39 @@
 const sendRequest = require('../helpers/sendRequest.js');
 const prefix = "$";
 
+async function isEnrolled(userID, classID) {
+    classID = "id_" + classID;
+    userID = "id_" + userID;
+
+    var data = JSON.stringify({
+        "operation": "sql",
+        "sql": "SELECT * FROM userInfo." + classID + " WHERE userID = '" + userID + "'",
+    });
+
+    var response = await sendRequest.sendRequest(data).catch();
+
+    if (response.data.length === 0) {
+        return false;
+    }
+    return true;
+}
+
+async function assignmentExists(assNo, classID) {
+    classID = "id_" + classID;
+
+    var data = JSON.stringify({
+        "operation": "sql",
+        "sql": "SELECT * FROM assignmentInfo." + classID + " WHERE assNo = " + assNo,
+    });
+
+    var response = await sendRequest.sendRequest(data).catch(e => console.log(e));
+
+    if (response.data.length === 0) {
+        return false;
+    }
+    return true;
+}
+
 async function isSubmitted(assNo, userID, classID) {
     classID = "id_" + classID;
     userID = "id_" + userID;
@@ -62,18 +95,29 @@ async function createSubmission(assNo, comment, userID, classID, link) {
 
 async function handleSubmit(message) {
 
+    if (!await isEnrolled(message.author.id, message.channel.id)){
+        message.reply("You are not enrolled in this class");
+        return;
+    }
+
     const commandBody = message.content.slice(prefix.length + 7);
     var args = commandBody.split(' ');
+
+    var assNo = args[0];
+    var comment = commandBody.slice(args[0].length + 1);
+
+    if(!await assignmentExists(assNo,message.channel.id))
+    {
+        message.reply("Assignment Does Not Exist");
+        return ;
+    }
 
     var Attachments = (message.attachments).array();
     if (Attachments.length === 0) {
         message.reply("Please Upload the Assignment File!");
         return;
     }
-
     var link = Attachments[0].url;
-    var assNo = args[0];
-    var comment = commandBody.slice(args[0].length + 1);
 
     var submitID = await isSubmitted(assNo, message.author.id, message.channel.id);
     if (submitID) {
