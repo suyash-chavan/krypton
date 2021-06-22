@@ -1,1 +1,1 @@
-# classroom-bot
+# Krypton - A Classroom Manager
