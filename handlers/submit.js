@@ -1,5 +1,5 @@
 const sendRequest = require('../helpers/sendRequest.js');
-const prefix = "$";
+const bot = require('../helpers/bot');
 
 async function isEnrolled(userID, classID) {
     classID = "id_" + classID;
@@ -100,7 +100,7 @@ async function handleSubmit(message) {
         return;
     }
 
-    const commandBody = message.content.slice(prefix.length + 7);
+    const commandBody = message.content.slice(bot.prefix.length + 7);
     var args = commandBody.split(' ');
 
     var assNo = args[0];

@@ -1,19 +1,19 @@
-const axios = require('axios');
-const config = require('../config.json');
+const axios = require('axios')
+const config = require('../config.json')
 
-async function sendRequest(reqData){
-    var request = {
+async function sendRequest (reqData) {
+    const request = {
         method: 'post',
         url: config.HARPER_URL,
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': config.HARPER_AUTH
+            Authorization: config.HARPER_AUTH
         },
         data: reqData
-    };
-    
-    var response = await axios(request);
-    return response;
+    }
+
+    const response = await axios(request)
+    return response
 }
 
-module.exports = { sendRequest };
+module.exports = { sendRequest }

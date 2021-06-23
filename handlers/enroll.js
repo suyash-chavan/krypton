@@ -1,124 +1,130 @@
-const sendRequest = require('../helpers/sendRequest.js');
-const discordClient = require('../discordClient.js');
-const prefix = "$";
+const sendRequest = require('../helpers/sendRequest.js')
+const discordClient = require('../discordClient.js')
+const bot = require('../helpers/bot')
 
-async function classExists(classID) {
+async function classExists (classID) {
+    classID = 'id_' + classID
 
-    classID = "id_" + classID;
+    const data = JSON.stringify({
+        operation: 'sql',
+        sql: "SELECT * FROM classroomInfo.classrooms WHERE channelID = '" + classID + "'"
+    })
 
-    var data = JSON.stringify({
-        "operation": "sql",
-        "sql": "SELECT * FROM classroomInfo.classrooms WHERE channelID = '" + classID + "'",
-    });
-
-    var response = await sendRequest.sendRequest(data);
-    return response;
+    const response = await sendRequest.sendRequest(data)
+    return response.data
 }
 
-function getUserFromMention(mention) {
-    if (!mention) return;
+function getUserFromMention (mention) {
+    if (!mention) return
 
     if (mention.startsWith('<@') && mention.endsWith('>')) {
-        mention = mention.slice(2, -1);
+        mention = mention.slice(2, -1)
 
         if (mention.startsWith('!')) {
-            mention = mention.slice(1);
+            mention = mention.slice(1)
         }
 
-        return discordClient.client.users.cache.get(mention);
+        return discordClient.client.users.cache.get(mention)
     }
 }
 
-async function isEnrolled(user, classID) {
-    classID = "id_" + classID;
-    userID = "id_" + user.id;
+async function isEnrolled (user, classID) {
+    classID = 'id_' + classID
 
-    var data = JSON.stringify({
-        "operation": "sql",
-        "sql": "SELECT * FROM userInfo." + classID + " WHERE userID = '" + userID + "'",
-    });
+    const userID = 'id_' + user.id
 
-    var response = await sendRequest.sendRequest(data).catch();
+    const data = JSON.stringify({
+        operation: 'sql',
+        sql: 'SELECT * FROM userInfo.' + classID + " WHERE userID = '" + userID + "'"
+    })
+
+    const response = await sendRequest.sendRequest(data).catch()
 
     if (response.data.length === 0) {
-        return;
+        return
     }
-    return (response.data)[0].id;
+    return (response.data)[0].id
 }
 
-async function enrollUser(user, classID, teacherID) {
-    classID = "id_" + classID;
-    teacherID = "id_" + teacherID;
+async function enrollUser (user, classID, teacherID) {
+    classID = 'id_' + classID
+    teacherID = 'id_' + teacherID
 
-    var userID = "id_" + user.id;
+    const userID = 'id_' + user.id
 
-    var data = JSON.stringify({
-        "operation": "insert",
-        "schema": "userInfo",
-        "table": classID,
-        "records": [
+    const data = JSON.stringify({
+        operation: 'insert',
+        schema: 'userInfo',
+        table: classID,
+        records: [
             {
-                "userID": userID,
-                "teacherID": teacherID
+                userID: userID,
+                teacherID: teacherID
             }
         ]
-    });
+    })
 
-    var response = await sendRequest.sendRequest(data);
-    return response;
+    await sendRequest.sendRequest(data)
 }
 
-
-async function handleEnroll(message) {
-
-    var allowedRole = message.member.roles.cache.some(role => role.name === 'Teacher');
+async function handleEnroll (message) {
+    const allowedRole = message.member.roles.cache.some(role => role.name === 'Teacher')
     if (!allowedRole) {
         message.reply('Command Not Allowed!').then(msg => {
-            msg.delete({ timeout: 10000 });
-        }).catch({});
+            msg.delete({ timeout: 10000 })
+        }).catch({})
 
-        message.delete({ timeout: 10000 });
-        return;
+        message.delete({ timeout: 10000 })
+        return
     }
 
-    var classID = message.channel.id;
-    var teacherID = message.author.id;
+    const classID = message.channel.id
+    const teacherID = message.author.id
 
     // Check if it is initiated classroom
-    var response = await classExists(classID);
+    let response
 
-    if (response.status === 200) {
-        if (response.data.length === 0) {
-            message.reply("Please Initiate the Class!");
-            return;
-        }
-    } else {
-        message.reply("Internal Server Error");
-        return;
+    try {
+        response = await classExists(classID)
+    } catch (err) {
+        message.reply('Internal Server Error')
+        console.log(err)
+        return
     }
 
-    const commandBody = message.content.slice(prefix.length);
-    const args = commandBody.split(' ');
+    if (response.length === 0) {
+        message.reply('Please Initiate the Class!')
+        return
+    }
+
+    const commandBody = message.content.slice(bot.prefix.length)
+    const args = commandBody.split(' ')
 
     if (args.length === 1) {
-        message.reply("Please mention Users to add them in class");
-        return;
+        message.reply('Please mention Users to add them in class')
+        return
     }
 
-    console.log(args);
+    try {
+        
+        for (let i = 1; i < args.length; i++) {
+            const user = getUserFromMention(args[i])
 
-    for (var i = 1; i < args.length; i++) {
-        var user = getUserFromMention(args[i]);
+            if (user != null) {
+                if (await isEnrolled(user, classID)) {
+                    continue
+                }
 
-        if (user != null) {
-            if (await isEnrolled(user, classID)){
-                continue;
+                enrollUser(user, classID, teacherID)
             }
-            await enrollUser(user, classID, teacherID);
         }
+    } catch (err) {
+        message.reply('Internal Server Error')
+        console.log(err)
+        return
     }
 
-    message.reply("Added users to the class!");
+    message.reply('Added users to the class!')
 }
 
-module.exports = { handleEnroll };
+module.exports = { handleEnroll }
