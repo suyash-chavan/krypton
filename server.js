@@ -13,7 +13,8 @@ discordClient.client.on('message', function (message) {
     if (!message.content.startsWith(prefix)) return
 
     if (message.guild === null) {
-        // Need to handle DMs
+        handler.handleHelp(message)
+        message.reply('**Please message me in the classroom!**')
         return
     }
 
@@ -33,9 +34,6 @@ discordClient.client.on('message', function (message) {
             break
         case 'view':
             handler.handleView(message)
-            break
-        case 'create':
-            handler.handleCreate(message)
             break
         case 'create':
             handler.handleCreate(message)
