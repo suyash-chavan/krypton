@@ -35,7 +35,7 @@ Make sure you have **Teacher** role on the server and given only to teachers.
 <br />
 </div>
 
-This project is being done for **HarperDB Hackathon** and maintained for long period even after Hackathon.
+This project is being done for **[HarperDB](https://harperdb.io/) Hackathon** and maintained for long period even after Hackathon. Their flexible and fast database is so cool and APIs are well documented.
 
 ## Contributing
 Please read [CONTRIBUTING.md](https://github.com/suyash-chavan/krypton/blob/main/COUNTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
