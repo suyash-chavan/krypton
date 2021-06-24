@@ -1,16 +1,17 @@
 {
-  "name": "classroom-bot",
+  "name": "krypton",
   "version": "1.0.0",
   "description": "",
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Suyash Chavan",
+  "license": "MIT",
   "dependencies": {
     "axios": "^0.21.1",
     "discord.js": "^12.5.3",
+    "log4js": "^6.3.0",
     "luxon": "^1.27.0"
   },
   "devDependencies": {

@@ -1,12 +1,10 @@
 const sendRequest = require('../helpers/sendRequest.js')
+const axios = require('axios')
+const log4js = require('../helpers/logger')
 
-/*
-    This function should be modified a bit. NoSQL operations for creating attributes
-    should be optimised using sync functions.
+const logger = log4js.log4js.getLogger("init");
 
-*/
-
-async function classExists (classID) {
+async function classExists(classID) {
     classID = 'id_' + classID
 
     const data = JSON.stringify({
@@ -14,12 +12,18 @@ async function classExists (classID) {
         sql: "SELECT * FROM classroomInfo.classrooms WHERE channelID = '" + classID + "'"
     })
 
-    const response = await sendRequest.sendRequest(data)
+    const response = await sendRequest.sendRequest(data).catch((error) => {
+        logger.error(error);
+    })
+
+    if (response === null || response.data === null) {
+        throw 'Response Data Error while checking existence of class!';
+    }
 
     return response.data
 }
 
-async function createClass (classID, className, teacherID) {
+async function createClass(classID, className, teacherID) {
     classID = 'id_' + classID
     teacherID = 'id_' + teacherID
 
@@ -36,16 +40,21 @@ async function createClass (classID, className, teacherID) {
         ]
     })
 
-    const response = await sendRequest.sendRequest(data)
+    const response = await sendRequest.sendRequest(data).catch((error) => {
+        logger.error(error);
+    })
+
+    if (response === null || response.data === null) {
+        throw 'Response Data Error while creating class!';
+    }
+
     return response.data
 }
 
-async function createUserTable (classID) {
+async function createUserTable(classID) {
     classID = 'id_' + classID
 
-    let data
-
-    data = JSON.stringify({
+    const data = JSON.stringify({
         operation: 'create_table',
         schema: 'userInfo',
         table: classID,
@@ -56,24 +65,24 @@ async function createUserTable (classID) {
 
     const attributes = ['userID', 'teacherID']
 
-    for (const index in attributes) {
-        data = JSON.stringify({
+    await axios.all(attributes.map(function (attribute) {
+        const data = JSON.stringify({
             operation: 'create_attribute',
             schema: 'userInfo',
             table: classID,
-            attribute: attributes[index]
+            attribute: attribute
         })
 
-        await sendRequest.sendRequest(data)
-    }
+        return sendRequest.sendRequest(data)
+    })).catch((error) => {
+        logger.error(error);
+    })
 }
 
-async function createAssignmentTable (classID) {
+async function createAssignmentTable(classID) {
     classID = 'id_' + classID
 
-    let data
-
-    data = JSON.stringify({
+    const data = JSON.stringify({
         operation: 'create_table',
         schema: 'assignmentInfo',
         table: classID,
@@ -84,24 +93,24 @@ async function createAssignmentTable (classID) {
 
     const attributes = ['assNo', 'teacherID', 'url', 'title', 'deadline']
 
-    for (const index in attributes) {
-        data = JSON.stringify({
+    await axios.all(attributes.map(function (attribute) {
+        const data = JSON.stringify({
             operation: 'create_attribute',
             schema: 'assignmentInfo',
             table: classID,
-            attribute: attributes[index]
+            attribute: attribute
         })
 
-        await sendRequest.sendRequest(data)
-    }
+        return sendRequest.sendRequest(data)
+    })).catch((error) => {
+        logger.error(error);
+    })
 }
 
-async function createSubmissionTable (classID) {
+async function createSubmissionTable(classID) {
     classID = 'id_' + classID
 
-    let data
-
-    data = JSON.stringify({
+    const data = JSON.stringify({
         operation: 'create_table',
         schema: 'submissionInfo',
         table: classID,
@@ -112,19 +121,21 @@ async function createSubmissionTable (classID) {
 
     const attributes = ['userID', 'url', 'comment', 'assNo']
 
-    for (const index in attributes) {
-        data = JSON.stringify({
+    await axios.all(attributes.map(function (attribute) {
+        const data = JSON.stringify({
             operation: 'create_attribute',
             schema: 'submissionInfo',
             table: classID,
-            attribute: attributes[index]
+            attribute: attribute
         })
 
-        await sendRequest.sendRequest(data)
-    }
+        return sendRequest.sendRequest(data)
+    })).catch((error) => {
+        logger.error(error);
+    })
 }
 
-async function handleInit (message) {
+async function handleInit(message) {
     // Check if author is Teacher
     const allowedRole = message.member.roles.cache.some(role => role.name === 'Teacher')
     if (!allowedRole) {
@@ -135,6 +146,8 @@ async function handleInit (message) {
         message.delete({ timeout: 10000 })
         return
     }
+
+    logger.error("Something");
 
     const className = message.channel.name
     const classID = message.channel.id
@@ -147,7 +160,7 @@ async function handleInit (message) {
         response = await classExists(classID)
     } catch (err) {
         message.reply('Internal Server Error')
-        console.log(err)
+        logger.error(err)
         return
     }
 
@@ -161,7 +174,7 @@ async function handleInit (message) {
         createClass(classID, className, teacherID)
     } catch (err) {
         message.reply('Internal Server Error')
-        console.log(err)
+        logger.error(err)
         return
     }
 
@@ -169,7 +182,7 @@ async function handleInit (message) {
         await createUserTable(classID)
     } catch (err) {
         message.reply('Internal Server Error')
-        console.log(err)
+        logger.error(err)
         return
     }
 
@@ -177,7 +190,7 @@ async function handleInit (message) {
         await createAssignmentTable(classID)
     } catch (err) {
         message.reply('Internal Server Error')
-        console.log(err)
+        logger.error(err)
         return
     }
 
@@ -185,7 +198,7 @@ async function handleInit (message) {
         await createSubmissionTable(classID)
     } catch (err) {
         message.reply('Internal Server Error')
-        console.log(err)
+        logger.error(err)
         return
     }
 
