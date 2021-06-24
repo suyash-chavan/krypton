@@ -1,4 +1,4 @@
-###
+### 
 
 <br />
 
@@ -38,7 +38,7 @@ Make sure you have **Teacher** role on the server and given only to teachers.
 This project is being done for **HarperDB Hackathon** and maintained for long period even after Hackathon.
 
 ## Contributing
-Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
+Please read [CONTRIBUTING.md](https://github.com/suyash-chavan/krypton/blob/main/COUNTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
 
 ## License
 
