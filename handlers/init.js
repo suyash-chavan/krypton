@@ -1,10 +1,10 @@
 const sendRequest = require('../helpers/sendRequest.js')
 const axios = require('axios')
+
 const log4js = require('../helpers/logger')
+const logger = log4js.init.getLogger('init')
 
-const logger = log4js.log4js.getLogger("init");
-
-async function classExists(classID) {
+async function classExists (classID) {
     classID = 'id_' + classID
 
     const data = JSON.stringify({
@@ -13,17 +13,17 @@ async function classExists(classID) {
     })
 
     const response = await sendRequest.sendRequest(data).catch((error) => {
-        logger.error(error);
+        logger.error(error)
     })
 
     if (response === null || response.data === null) {
-        throw 'Response Data Error while checking existence of class!';
+        throw new Error('Response Data Error while checking existence of class!')
     }
 
     return response.data
 }
 
-async function createClass(classID, className, teacherID) {
+async function createClass (classID, className, teacherID) {
     classID = 'id_' + classID
     teacherID = 'id_' + teacherID
 
@@ -41,17 +41,17 @@ async function createClass(classID, className, teacherID) {
     })
 
     const response = await sendRequest.sendRequest(data).catch((error) => {
-        logger.error(error);
+        logger.error(error)
     })
 
     if (response === null || response.data === null) {
-        throw 'Response Data Error while creating class!';
+        throw new Error('Response Data Error while creating class!')
     }
 
     return response.data
 }
 
-async function createUserTable(classID) {
+async function createUserTable (classID) {
     classID = 'id_' + classID
 
     const data = JSON.stringify({
@@ -75,11 +75,11 @@ async function createUserTable(classID) {
 
         return sendRequest.sendRequest(data)
     })).catch((error) => {
-        logger.error(error);
+        logger.error(error)
     })
 }
 
-async function createAssignmentTable(classID) {
+async function createAssignmentTable (classID) {
     classID = 'id_' + classID
 
     const data = JSON.stringify({
@@ -103,11 +103,11 @@ async function createAssignmentTable(classID) {
 
         return sendRequest.sendRequest(data)
     })).catch((error) => {
-        logger.error(error);
+        logger.error(error)
     })
 }
 
-async function createSubmissionTable(classID) {
+async function createSubmissionTable (classID) {
     classID = 'id_' + classID
 
     const data = JSON.stringify({
@@ -131,11 +131,11 @@ async function createSubmissionTable(classID) {
 
         return sendRequest.sendRequest(data)
     })).catch((error) => {
-        logger.error(error);
+        logger.error(error)
     })
 }
 
-async function handleInit(message) {
+async function handleInit (message) {
     // Check if author is Teacher
     const allowedRole = message.member.roles.cache.some(role => role.name === 'Teacher')
     if (!allowedRole) {
@@ -146,8 +146,6 @@ async function handleInit(message) {
         message.delete({ timeout: 10000 })
         return
     }
-
-    logger.error("Something");
 
     const className = message.channel.name
     const classID = message.channel.id

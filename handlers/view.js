@@ -2,6 +2,9 @@ const sendRequest = require('../helpers/sendRequest.js')
 const bot = require('../helpers/bot')
 const dateTime = require('../helpers/dateTime')
 
+const log4js = require('../helpers/logger')
+const logger = log4js.view.getLogger('view')
+
 async function getAssignments (classID) {
     classID = 'id_' + classID
 
@@ -74,7 +77,7 @@ async function getDeadline (classID, assNo) {
 
     const response = await sendRequest.sendRequest(data)
 
-    return parseInt((response.data)[0].deadline.slice(5))
+    return response.data
 }
 
 async function getStudents (classID) {
@@ -82,7 +85,7 @@ async function getStudents (classID) {
 
     const data = JSON.stringify({
         operation: 'sql',
-        sql: 'SELECT userID FROM userInfo.' + classID + " WHERE userID != 'id_'"
+        sql: 'SELECT userID FROM userInfo.' + classID
     })
 
     const response = await sendRequest.sendRequest(data)
@@ -100,7 +103,14 @@ async function handleReport (message, assNo) {
     let submission = ''
     let status = ''
 
-    const deadline = await getDeadline(classID, assNo)
+    const response = await getDeadline(classID, assNo)
+
+    if (response.length === 0) {
+        message.reply('Assignment Not Created!')
+        return
+    }
+
+    const deadline = parseInt(response[0].deadline.slice(5))
 
     for (let i = 0; i < submissions.length; i++) {
         user = user + '<@' + submissions[i].userID.slice(3) + '>\n'
@@ -110,9 +120,9 @@ async function handleReport (message, assNo) {
         const submissionTime = submissions[i].__updatedtime__
 
         if (submissionTime > deadline) {
-            status = status + 'OK\n'
-        } else {
             status = status + 'LATE\n'
+        } else {
+            status = status + 'OK\n'
         }
     }
 
@@ -140,9 +150,7 @@ async function handleNotReport (message, assNo) {
         submitted[response[index].userID] = true
     }
 
-    let students = await getStudents(classID)
-
-    students = students.data
+    const students = await getStudents(classID)
 
     let absent = ''
 
@@ -228,9 +236,14 @@ async function handleView (message) {
     }
 
     try {
-        assNo = parseInt(args[0], 10)
+        assNo = parseFloat(args[0], 10)
     } catch (err) {
         message.reply('Incorrect Command Format')
+        return
+    }
+
+    if (!Number.isInteger(assNo)) {
+        message.reply('Assignment Number should be an Integer!')
         return
     }
 

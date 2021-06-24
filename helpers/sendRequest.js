@@ -16,4 +16,18 @@ async function sendRequest (reqData) {
     return response
 }
 
-module.exports = { sendRequest }
+function syncRequest (reqData) {
+    const request = {
+        method: 'post',
+        url: config.HARPER_URL,
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: config.HARPER_AUTH
+        },
+        data: reqData
+    }
+
+    return axios(request)
+}
+
+module.exports = { sendRequest, syncRequest }

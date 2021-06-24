@@ -1,6 +1,10 @@
+const axios = require('axios')
 const sendRequest = require('../helpers/sendRequest.js')
 const discordClient = require('../discordClient.js')
 const bot = require('../helpers/bot')
+
+const log4js = require('../helpers/logger')
+const logger = log4js.enroll.getLogger('enroll')
 
 async function classExists (classID) {
     classID = 'id_' + classID
@@ -10,7 +14,10 @@ async function classExists (classID) {
         sql: "SELECT * FROM classroomInfo.classrooms WHERE channelID = '" + classID + "'"
     })
 
-    const response = await sendRequest.sendRequest(data)
+    const response = await sendRequest.sendRequest(data).catch((error) => {
+        logger.error(error)
+    })
+
     return response.data
 }
 
@@ -38,7 +45,9 @@ async function isEnrolled (user, classID) {
         sql: 'SELECT * FROM userInfo.' + classID + " WHERE userID = '" + userID + "'"
     })
 
-    const response = await sendRequest.sendRequest(data).catch()
+    const response = await sendRequest.sendRequest(data).catch((error) => {
+        logger.error(error)
+    })
 
     if (response.data.length === 0) {
         return
@@ -64,7 +73,9 @@ async function enrollUser (user, classID, teacherID) {
         ]
     })
 
-    await sendRequest.sendRequest(data)
+    await sendRequest.sendRequest(data).catch((error) => {
+        logger.error(error)
+    })
 }
 
 async function handleEnroll (message) {
@@ -99,25 +110,25 @@ async function handleEnroll (message) {
 
     const commandBody = message.content.slice(bot.prefix.length)
     const args = commandBody.split(' ')
+    args.shift()
 
-    if (args.length === 1) {
+    if (args.length === 0) {
         message.reply('Please mention Users to add them in class')
         return
     }
 
     try {
-        
-        for (let i = 1; i < args.length; i++) {
-            const user = getUserFromMention(args[i])
+        axios.all(args.map(async function (userID) {
+            const user = getUserFromMention(userID)
 
             if (user != null) {
-                if (await isEnrolled(user, classID)) {
-                    continue
+                if (!await isEnrolled(user, classID)) {
+                    return enrollUser(user, classID, teacherID)
                 }
-
-                enrollUser(user, classID, teacherID)
             }
-        }
+        })).catch((error) => {
+            logger.error(error)
+        })
     } catch (err) {
         message.reply('Internal Server Error')
         console.log(err)

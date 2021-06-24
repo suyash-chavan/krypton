@@ -2,6 +2,9 @@ const sendRequest = require('../helpers/sendRequest.js')
 const bot = require('../helpers/bot')
 const dateTime = require('../helpers/dateTime')
 
+const log4js = require('../helpers/logger')
+const logger = log4js.create.getLogger('create')
+
 async function uploadAssignment (assNo, classID, teacherID, link, title, dateTime) {
     classID = 'id_' + classID
     teacherID = 'id_' + teacherID
@@ -22,7 +25,9 @@ async function uploadAssignment (assNo, classID, teacherID, link, title, dateTim
         ]
     })
 
-    await sendRequest.sendRequest(data)
+    await sendRequest.sendRequest(data).catch((error) => {
+        logger.error(error)
+    })
 }
 
 async function updateAssignment (AssignID, link, assDec, dateTime, classID) {
@@ -43,7 +48,9 @@ async function updateAssignment (AssignID, link, assDec, dateTime, classID) {
         ]
     })
 
-    await sendRequest.sendRequest(data)
+    await sendRequest.sendRequest(data).catch((error) => {
+        logger.error(error)
+    })
 }
 
 async function isAssigned (classID, assNo) {
@@ -54,23 +61,25 @@ async function isAssigned (classID, assNo) {
         sql: 'SELECT * FROM assignmentInfo.' + classID + ' WHERE assNo = ' + assNo
     })
 
-    const response = await sendRequest.sendRequest(data).catch()
+    const response = await sendRequest.sendRequest(data).catch((error) => {
+        logger.error(error)
+    })
 
     if (response.data.length === 0) {
         return null
     }
+
     return (response.data)[0].id
 }
 
 async function handleCreate (message) {
-    
     const allowedRole = message.member.roles.cache.some(role => role.name === 'Teacher')
     if (!allowedRole) {
         message.reply('Command Not Allowed!').then(msg => {
             msg.delete({ timeout: 10000 })
         }).catch({})
 
-        message.delete({ timeout: 10000 })
+        message.delete({ timeout: 10000 }).catch({})
         return
     }
 
@@ -103,11 +112,17 @@ async function handleCreate (message) {
     const AssignID = await isAssigned(classID, assNo)
 
     if (AssignID != null) {
-        await updateAssignment(AssignID, link, assDec, MilliTime, classID)
-        message.reply('Updated the assignment!')
+        updateAssignment(AssignID, link, assDec, MilliTime, classID).catch((error) => {
+            logger.error(error)
+        }).then(function () {
+            message.reply('Updated the assignment!')
+        })
     } else {
-        await uploadAssignment(assNo, classID, message.author.id, link, assDec, MilliTime)
-        message.reply('Created the assignment!')
+        uploadAssignment(assNo, classID, message.author.id, link, assDec, MilliTime).catch((error) => {
+            logger.error(error)
+        }).then(function () {
+            message.reply('Created the assignment!')
+        })
     }
 }
 
