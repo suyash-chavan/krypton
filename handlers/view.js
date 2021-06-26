@@ -126,6 +126,11 @@ async function handleReport (message, assNo) {
         }
     }
 
+    if (user === '') {
+        message.reply('No Submissions found!')
+        return
+    }
+
     message.channel.send({
         embed: {
             color: 3447003,
@@ -184,6 +189,11 @@ async function handleEnrolled (message) {
 
     for (let i = 0; i < students.length; i++) {
         user = user + '<@' + students[i].userID.slice(3) + '>\n'
+    }
+
+    if (user === '') {
+        message.reply('No enrolled students found!')
+        return
     }
 
     message.channel.send({

@@ -4,6 +4,7 @@ const destroy = require('log4js')
 const enroll = require('log4js')
 const submit = require('log4js')
 const view = require('log4js')
+const remove = require('log4js')
 
 init.configure({
     appenders: {
@@ -59,4 +60,13 @@ destroy.configure({
     }
 })
 
-module.exports = { init, create, enroll, submit, view, destroy }
+remove.configure({
+    appenders: {
+        remove: { type: 'file', filename: './logs/remove.log' }
+    },
+    categories: {
+        default: { appenders: ['remove'], level: 'error' }
+    }
+})
+
+module.exports = { init, create, enroll, submit, view, destroy, remove }

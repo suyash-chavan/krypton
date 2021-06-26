@@ -44,6 +44,9 @@ discordClient.client.on('message', function (message) {
         case 'destroy':
             handler.handleDestroy(message)
             break
+        case 'remove':
+            handler.handleRemove(message)
+            break
         default:
             handler.handleInvalidCommand(message)
     }
