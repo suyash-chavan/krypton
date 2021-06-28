@@ -23,6 +23,13 @@ function handleHelp (message) {
                                     '└ **$view !1 report** - View Students who didn\'t submit Assignment 1'
             },
             { name: '$submit', value: '├ Submit the assignment with attachment. \n└ **$submit {assignment no.}**' },
+            {
+                name: '$remove',
+                value: '└ Delete Enrollments/Assignments/Submissions. \n' +
+                                    '├ **$remove enrolled @{student\'s handle} @{student\'s handle} ...**\n'+'  └ Remove enrolled students \n' +
+                                    '├ **$remove assignments {assignment_no} {assignment_no}...**\n'+'  └ Delete mentioned assignments\n' +
+                                    '├ **$remove submissions {assignment_no} {assignment_no}...**\n'+'  └ Delete all submissions of assignments\n'
+            },
             { name: '$enroll', value: '├ Enroll students in classroom. \n└ **$enroll @{student\'s handle} @{student\'s handle} ...**' },
             { name: '$help', value: '└ View this message' },
             { name: '‎', value: '----------------------------------------------------‎' }
