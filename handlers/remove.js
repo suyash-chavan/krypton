@@ -96,7 +96,7 @@ async function handleEnrolled (message, args) {
     message.reply('Mentioned students are unenrolled!')
 }
 
-async function removeAssignment (assNo, classID) {
+function removeAssignment (assNo, classID) {
     classID = 'id_' + classID
 
     const data = JSON.stringify({
@@ -104,7 +104,7 @@ async function removeAssignment (assNo, classID) {
         sql: 'DELETE FROM assignmentInfo.' + classID + ' WHERE assNo = ' + assNo
     })
 
-    await sendRequest.sendRequest(data).catch((error) => {
+    return sendRequest.syncRequest(data).catch((error) => {
         logger.error(error)
     })
 }
@@ -124,7 +124,7 @@ async function handleAssignment (message, args) {
     message.reply('Mentioned assignments are deleted!')
 }
 
-async function removeSubmissions (assNo, classID) {
+function removeSubmissions (assNo, classID) {
     classID = 'id_' + classID
 
     const data = JSON.stringify({
@@ -132,7 +132,7 @@ async function removeSubmissions (assNo, classID) {
         sql: 'DELETE FROM submissionInfo.' + classID + ' WHERE assNo = ' + assNo
     })
 
-    await sendRequest.sendRequest(data).catch((error) => {
+    return sendRequest.syncRequest(data).catch((error) => {
         logger.error(error)
     })
 }

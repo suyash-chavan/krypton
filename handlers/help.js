@@ -27,10 +27,11 @@ function handleHelp (message) {
                 name: '$remove',
                 value: '└ Delete Enrollments/Assignments/Submissions. \n' +
                                     '├ **$remove enrolled @{student\'s handle} @{student\'s handle} ...**\n'+'  └ Remove enrolled students \n' +
-                                    '├ **$remove assignments {assignment_no} {assignment_no}...**\n'+'  └ Delete mentioned assignments\n' +
-                                    '├ **$remove submissions {assignment_no} {assignment_no}...**\n'+'  └ Delete all submissions of assignments\n'
+                                    '├ **$remove assignment {assignment_no} {assignment_no}...**\n'+'  └ Delete mentioned assignments\n' +
+                                    '├ **$remove submission {assignment_no} {assignment_no}...**\n'+'  └ Delete all submissions of assignments\n'
             },
             { name: '$enroll', value: '├ Enroll students in classroom. \n└ **$enroll @{student\'s handle} @{student\'s handle} ...**' },
+            { name: '$destroy', value: '└ Delete the Classroom' },
             { name: '$help', value: '└ View this message' },
             { name: '‎', value: '----------------------------------------------------‎' }
         )
