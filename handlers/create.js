@@ -5,6 +5,29 @@ const dateTime = require('../helpers/dateTime')
 const log4js = require('../helpers/logger')
 const logger = log4js.create.getLogger('create')
 
+async function classExists (classID) {
+    classID = 'id_' + classID
+
+    const data = JSON.stringify({
+        operation: 'sql',
+        sql: "SELECT * FROM classroomInfo.classrooms WHERE channelID = '" + classID + "'"
+    })
+
+    const response = await sendRequest.sendRequest(data).catch((error) => {
+        logger.error(error)
+    })
+
+    if (response === null || response.data === null) {
+        throw new Error('Response Data Error while checking existence of class!')
+    }
+
+    if (response.data.length === 0) {
+        return false
+    }
+
+    return true
+}
+
 async function uploadAssignment (assNo, classID, teacherID, link, title, dateTime) {
     classID = 'id_' + classID
     teacherID = 'id_' + teacherID
@@ -73,6 +96,7 @@ async function isAssigned (classID, assNo) {
 }
 
 async function handleCreate (message) {
+    // Only Teachers are allowed to use this command
     const allowedRole = message.member.roles.cache.some(role => role.name === 'Teacher')
     if (!allowedRole) {
         message.reply('Command Not Allowed!').then(msg => {
@@ -80,6 +104,19 @@ async function handleCreate (message) {
         }).catch({})
 
         message.delete({ timeout: 10000 }).catch({})
+        return
+    }
+
+    const classID = message.channel.id
+
+    try {
+        if (!await classExists(classID)) {
+            message.reply('You have not initialised the class')
+            return
+        }
+    } catch (err) {
+        message.reply('Internal Server Error')
+        console.log(err)
         return
     }
 
@@ -108,7 +145,6 @@ async function handleCreate (message) {
         return
     }
 
-    const classID = message.channel.id
     const AssignID = await isAssigned(classID, assNo)
 
     if (AssignID != null) {

@@ -207,7 +207,41 @@ async function handleEnrolled (message) {
     })
 }
 
+async function classExists (classID) {
+    classID = 'id_' + classID
+
+    const data = JSON.stringify({
+        operation: 'sql',
+        sql: "SELECT * FROM classroomInfo.classrooms WHERE channelID = '" + classID + "'"
+    })
+
+    const response = await sendRequest.sendRequest(data).catch((error) => {
+        logger.error(error)
+    })
+
+    if (response === null || response.data === null) {
+        throw new Error('Response Data Error while checking existence of class!')
+    }
+
+    if (response.data.length === 0) {
+        return false
+    }
+
+    return true
+}
+
 async function handleView (message) {
+    try {
+        if (!await classExists(message.channel.id)) {
+            message.reply('You have not initialised the class')
+            return
+        }
+    } catch (err) {
+        message.reply('Internal Server Error')
+        console.log(err)
+        return
+    }
+
     const commandBody = message.content.slice(bot.prefix.length)
     const args = commandBody.split(' ')
     args.shift()

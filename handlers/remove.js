@@ -131,7 +131,7 @@ async function handleSubmission (message, args) {
 }
 
 async function handleRemove (message) {
-    // Check if author is Teacher
+    // Only Teachers are allowed to use this command
     const allowedRole = message.member.roles.cache.some(role => role.name === 'Teacher')
     if (!allowedRole) {
         message.reply('Command Not Allowed!').then(msg => {

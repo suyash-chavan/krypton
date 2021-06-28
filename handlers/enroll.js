@@ -55,7 +55,7 @@ async function isEnrolled (user, classID) {
     return (response.data)[0].id
 }
 
-async function enrollUser (user, classID, teacherID) {
+function enrollUser (user, classID, teacherID) {
     classID = 'id_' + classID
     teacherID = 'id_' + teacherID
 
@@ -73,7 +73,7 @@ async function enrollUser (user, classID, teacherID) {
         ]
     })
 
-    await sendRequest.sendRequest(data).catch((error) => {
+    return sendRequest.syncRequest(data).catch((error) => {
         logger.error(error)
     })
 }
@@ -118,7 +118,7 @@ async function handleEnroll (message) {
     }
 
     try {
-        axios.all(args.map(async function (userID) {
+        await axios.all(args.map(async function (userID) {
             const user = getUserFromMention(userID)
 
             if (user != null) {

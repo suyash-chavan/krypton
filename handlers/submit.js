@@ -4,6 +4,29 @@ const bot = require('../helpers/bot')
 const log4js = require('../helpers/logger')
 const logger = log4js.submit.getLogger('submit')
 
+async function classExists (classID) {
+    classID = 'id_' + classID
+
+    const data = JSON.stringify({
+        operation: 'sql',
+        sql: "SELECT * FROM classroomInfo.classrooms WHERE channelID = '" + classID + "'"
+    })
+
+    const response = await sendRequest.sendRequest(data).catch((error) => {
+        logger.error(error)
+    })
+
+    if (response === null || response.data === null) {
+        throw new Error('Response Data Error while checking existence of class!')
+    }
+
+    if (response.data.length === 0) {
+        return false
+    }
+
+    return true
+}
+
 async function isEnrolled (userID, classID) {
     classID = 'id_' + classID
     userID = 'id_' + userID
@@ -96,6 +119,17 @@ async function createSubmission (assNo, comment, userID, classID, link) {
 }
 
 async function handleSubmit (message) {
+    try {
+        if (!await classExists(message.channel.id)) {
+            message.reply('You have not initialised the class')
+            return
+        }
+    } catch (err) {
+        message.reply('Internal Server Error')
+        console.log(err)
+        return
+    }
+
     if (!await isEnrolled(message.author.id, message.channel.id)) {
         message.reply('You are not enrolled in this class')
         return

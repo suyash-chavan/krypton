@@ -23,7 +23,7 @@ async function classExists (classID) {
     return response.data
 }
 
-async function createClass (classID, className, teacherID) {
+function createClass (classID, className, teacherID) {
     classID = 'id_' + classID
     teacherID = 'id_' + teacherID
 
@@ -40,18 +40,12 @@ async function createClass (classID, className, teacherID) {
         ]
     })
 
-    const response = await sendRequest.sendRequest(data).catch((error) => {
+    return sendRequest.syncRequest(data).catch((error) => {
         logger.error(error)
     })
-
-    if (response === null || response.data === null) {
-        throw new Error('Response Data Error while creating class!')
-    }
-
-    return response.data
 }
 
-async function createUserTable (classID) {
+function createUserTable (classID) {
     classID = 'id_' + classID
 
     const data = JSON.stringify({
@@ -61,11 +55,15 @@ async function createUserTable (classID) {
         hash_attribute: 'id'
     })
 
-    await sendRequest.sendRequest(data)
+    return sendRequest.syncRequest(data)
+}
+
+function createUserAttributes (classID) {
+    classID = 'id_' + classID
 
     const attributes = ['userID', 'teacherID']
 
-    await axios.all(attributes.map(function (attribute) {
+    return axios.all(attributes.map(function (attribute) {
         const data = JSON.stringify({
             operation: 'create_attribute',
             schema: 'userInfo',
@@ -73,13 +71,13 @@ async function createUserTable (classID) {
             attribute: attribute
         })
 
-        return sendRequest.sendRequest(data)
+        return sendRequest.syncRequest(data)
     })).catch((error) => {
         logger.error(error)
     })
 }
 
-async function createAssignmentTable (classID) {
+function createAssignmentTable (classID) {
     classID = 'id_' + classID
 
     const data = JSON.stringify({
@@ -89,11 +87,15 @@ async function createAssignmentTable (classID) {
         hash_attribute: 'id'
     })
 
-    await sendRequest.sendRequest(data)
+    return sendRequest.syncRequest(data)
+}
+
+function createAssignmentAttributes (classID) {
+    classID = 'id_' + classID
 
     const attributes = ['assNo', 'teacherID', 'url', 'title', 'deadline']
 
-    await axios.all(attributes.map(function (attribute) {
+    return axios.all(attributes.map(function (attribute) {
         const data = JSON.stringify({
             operation: 'create_attribute',
             schema: 'assignmentInfo',
@@ -101,13 +103,13 @@ async function createAssignmentTable (classID) {
             attribute: attribute
         })
 
-        return sendRequest.sendRequest(data)
+        return sendRequest.syncRequest(data)
     })).catch((error) => {
         logger.error(error)
     })
 }
 
-async function createSubmissionTable (classID) {
+function createSubmissionTable (classID) {
     classID = 'id_' + classID
 
     const data = JSON.stringify({
@@ -117,11 +119,15 @@ async function createSubmissionTable (classID) {
         hash_attribute: 'id'
     })
 
-    await sendRequest.sendRequest(data)
+    return sendRequest.syncRequest(data)
+}
+
+function createSubmissionAttributes (classID) {
+    classID = 'id_' + classID
 
     const attributes = ['userID', 'url', 'comment', 'assNo']
 
-    await axios.all(attributes.map(function (attribute) {
+    return axios.all(attributes.map(function (attribute) {
         const data = JSON.stringify({
             operation: 'create_attribute',
             schema: 'submissionInfo',
@@ -129,14 +135,14 @@ async function createSubmissionTable (classID) {
             attribute: attribute
         })
 
-        return sendRequest.sendRequest(data)
+        return sendRequest.syncRequest(data)
     })).catch((error) => {
         logger.error(error)
     })
 }
 
 async function handleInit (message) {
-    // Check if author is Teacher
+    // Only Teachers are allowed to use this command
     const allowedRole = message.member.roles.cache.some(role => role.name === 'Teacher')
     if (!allowedRole) {
         message.reply('Command Not Allowed!').then(msg => {
@@ -151,7 +157,6 @@ async function handleInit (message) {
     const classID = message.channel.id
     const teacherID = message.author.id
 
-    // All the responses will be stored here
     let response
 
     try {
@@ -162,38 +167,24 @@ async function handleInit (message) {
         return
     }
 
-    // Classroom already created
     if (response.length !== 0) {
         message.reply('Class already Initiated')
         return
     }
 
     try {
-        createClass(classID, className, teacherID)
-    } catch (err) {
-        message.reply('Internal Server Error')
-        logger.error(err)
-        return
-    }
+        await axios.all([
+            createClass(classID, className, teacherID),
+            createUserTable(classID),
+            createAssignmentTable(classID),
+            createSubmissionTable(classID)
+        ])
 
-    try {
-        await createUserTable(classID)
-    } catch (err) {
-        message.reply('Internal Server Error')
-        logger.error(err)
-        return
-    }
-
-    try {
-        await createAssignmentTable(classID)
-    } catch (err) {
-        message.reply('Internal Server Error')
-        logger.error(err)
-        return
-    }
-
-    try {
-        await createSubmissionTable(classID)
+        await axios.all([
+            createUserAttributes(classID),
+            createAssignmentAttributes(classID),
+            createSubmissionAttributes(classID)
+        ])
     } catch (err) {
         message.reply('Internal Server Error')
         logger.error(err)

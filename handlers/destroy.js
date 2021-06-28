@@ -80,7 +80,7 @@ function destroyClass (classID) {
 }
 
 async function handleDestroy (message) {
-    // Check if author is Teacher
+    // Only Teachers are allowed to use this command
     const allowedRole = message.member.roles.cache.some(role => role.name === 'Teacher')
     if (!allowedRole) {
         message.reply('Command Not Allowed!').then(msg => {
@@ -105,10 +105,12 @@ async function handleDestroy (message) {
     }
 
     try {
-        await axios.all([destroyAssignments(classID),
+        await axios.all([
+            destroyAssignments(classID),
             destroySubmissions(classID),
             destroyUsers(classID),
-            destroyClass(classID)]).catch((error) => {
+            destroyClass(classID)
+        ]).catch((error) => {
             logger.error(error)
         })
     } catch (err) {
@@ -116,7 +118,7 @@ async function handleDestroy (message) {
         return
     }
 
-    message.reply('Classroom is successfully DESTROYED!')
+    message.reply('Classroom successfully DESTROYED!')
 }
 
 module.exports = { handleDestroy }
