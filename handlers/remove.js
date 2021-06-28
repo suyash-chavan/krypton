@@ -166,7 +166,7 @@ async function handleRemove (message) {
     }
 
     try {
-        if (!await classExists(classID)) {
+        if (!await classExists(message.channel.id)) {
             message.reply('You have not initialised the class')
             return
         }
