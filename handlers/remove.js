@@ -6,6 +6,29 @@ const sendRequest = require('../helpers/sendRequest.js')
 const log4js = require('../helpers/logger')
 const logger = log4js.remove.getLogger('remove')
 
+async function classExists (classID) {
+    classID = 'id_' + classID
+
+    const data = JSON.stringify({
+        operation: 'sql',
+        sql: "SELECT * FROM classroomInfo.classrooms WHERE channelID = '" + classID + "'"
+    })
+
+    const response = await sendRequest.sendRequest(data).catch((error) => {
+        logger.error(error)
+    })
+
+    if (response === null || response.data === null) {
+        throw new Error('Response Data Error while checking existence of class!')
+    }
+
+    if (response.data.length === 0) {
+        return false
+    }
+
+    return true
+}
+
 async function isEnrolled (user, classID) {
     classID = 'id_' + classID
 
@@ -139,6 +162,17 @@ async function handleRemove (message) {
         }).catch({})
 
         message.delete({ timeout: 10000 })
+        return
+    }
+
+    try {
+        if (!await classExists(classID)) {
+            message.reply('You have not initialised the class')
+            return
+        }
+    } catch (err) {
+        message.reply('Internal Server Error')
+        console.log(err)
         return
     }
 
