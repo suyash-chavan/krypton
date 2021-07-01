@@ -7,6 +7,7 @@ const { handleView } = require('./handlers/view.js')
 const { handleHelp } = require('./handlers/help.js')
 const { handleDestroy } = require('./handlers/destroy.js')
 const { handleRemove } = require('./handlers/remove.js')
+const { handleGet } = require('./handlers/get.js')
 
 module.exports = {
     handleCreate,
@@ -17,5 +18,6 @@ module.exports = {
     handleInvalidCommand,
     handleHelp,
     handleDestroy,
-    handleRemove
+    handleRemove,
+    handleGet
 }
